@@ -1,11 +1,12 @@
 package adapter
 
 import (
-	"strconv"
+	"fmt"
+	"os"
+	"strings"
 
 	"github.com/BrobridgeOrg/gravity-adapter-stan/pkg/app"
 	log "github.com/sirupsen/logrus"
-	"github.com/sony/sonyflake"
 )
 
 type Adapter struct {
@@ -26,14 +27,16 @@ func NewAdapter(a app.App) *Adapter {
 
 func (adapter *Adapter) Init() error {
 
-	// Genereate a unique ID for instance
-	flake := sonyflake.NewSonyflake(sonyflake.Settings{})
-	id, err := flake.NextID()
+	// Using hostname (pod name) by default
+	host, err := os.Hostname()
 	if err != nil {
+		log.Error(err)
 		return nil
 	}
 
-	adapter.clientID = strconv.FormatUint(id, 16)
+	host = strings.ReplaceAll(host, ".", "_")
+
+	adapter.clientID = fmt.Sprintf("gravity-%s", host)
 
 	err = adapter.sm.Initialize()
 	if err != nil {
