@@ -36,7 +36,7 @@ func (adapter *Adapter) Init() error {
 
 	host = strings.ReplaceAll(host, ".", "_")
 
-	adapter.clientID = fmt.Sprintf("gravity-%s", host)
+	adapter.clientID = fmt.Sprintf("gravity_adapter_stan-%s", host)
 
 	err = adapter.sm.Initialize()
 	if err != nil {
