@@ -6,6 +6,13 @@
 			"cluster_id": "test-cluster",
 			"durable_name": "example",
 			"channel": "example.userevent"
+		},
+		"account_queue": {
+			"host": "0.0.0.0",
+			"port": 32803,
+			"cluster_id": "test-cluster",
+			"durable_name": "example",
+			"channel": "example.accountevent"
 		}
 	}
 }

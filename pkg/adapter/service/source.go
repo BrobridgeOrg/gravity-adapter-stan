@@ -123,7 +123,7 @@ func (source *Source) Init() error {
 	log.WithFields(log.Fields{
 		"source":      source.name,
 		"address":     address,
-		"client_name": source.adapter.clientID,
+		"client_name": source.adapter.clientID + "-" + source.name,
 		"cluster_id":  source.clusterID,
 		"durableName": source.durableName,
 		"channel":     source.channel,
@@ -131,7 +131,7 @@ func (source *Source) Init() error {
 
 	options := eventbus.Options{
 		ClusterID:           source.clusterID,
-		ClientName:          source.adapter.clientID,
+		ClientName:          source.adapter.clientID + "-" + source.name,
 		PingInterval:        time.Duration(source.pingInterval),
 		MaxPingsOutstanding: source.maxPingsOutstanding,
 		MaxReconnects:       source.maxReconnects,
