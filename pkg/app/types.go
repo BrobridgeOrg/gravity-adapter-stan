@@ -1,9 +1,9 @@
 package app
 
 import (
-	"github.com/BrobridgeOrg/gravity-adapter-stan/pkg/grpcbus"
+	grpc_connection_pool "github.com/cfsghost/grpc-connection-pool"
 )
 
 type App interface {
-	GetGRPCPool() grpcbus.GRPCPool
+	GetGRPCPool() *grpc_connection_pool.GRPCPool
 }

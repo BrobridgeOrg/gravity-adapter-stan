@@ -199,7 +199,6 @@ func (source *Source) HandleMessage(m *stan.Msg) {
 		return
 	}
 	client := dsa.NewDataSourceAdapterClient(conn)
-	source.adapter.app.GetGRPCPool().Put(conn)
 
 	// Preparing context
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)

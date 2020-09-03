@@ -2,13 +2,13 @@ package instance
 
 import (
 	adapter_service "github.com/BrobridgeOrg/gravity-adapter-stan/pkg/adapter/service"
-	"github.com/BrobridgeOrg/gravity-adapter-stan/pkg/grpcbus/pool"
+	grpc_connection_pool "github.com/cfsghost/grpc-connection-pool"
 	log "github.com/sirupsen/logrus"
 )
 
 type AppInstance struct {
 	done     chan bool
-	grpcPool *pool.GRPCPool
+	grpcPool *grpc_connection_pool.GRPCPool
 	adapter  *adapter_service.Adapter
 }
 
