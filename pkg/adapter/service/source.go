@@ -1,13 +1,16 @@
 package adapter
 
 import (
-	"context"
-	"encoding/json"
+	//"context"
+	//"encoding/json"
 	"fmt"
+	"sync"
 	"time"
+	"unsafe"
 
 	eventbus "github.com/BrobridgeOrg/gravity-adapter-stan/pkg/eventbus/service"
 	dsa "github.com/BrobridgeOrg/gravity-api/service/dsa"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
 	log "github.com/sirupsen/logrus"
@@ -37,6 +40,18 @@ type Source struct {
 	pingInterval        int64
 	maxPingsOutstanding int
 	maxReconnects       int
+}
+
+var requestPool = sync.Pool{
+	New: func() interface{} {
+		return &dsa.PublishRequest{}
+	},
+}
+
+func StrToBytes(s string) []byte {
+	x := (*[2]uintptr)(unsafe.Pointer(&s))
+	h := [3]uintptr{x[0], x[1], x[1]}
+	return *(*[]byte)(unsafe.Pointer(&h))
 }
 
 func NewSource(adapter *Adapter, name string, sourceInfo *SourceInfo) *Source {
@@ -166,55 +181,24 @@ func (source *Source) Init() error {
 
 func (source *Source) HandleMessage(m *stan.Msg) {
 
-	var packet Packet
+	eventName := jsoniter.Get(m.Data, "event").ToString()
+	payload := jsoniter.Get(m.Data, "payload").ToString()
 
-	// Parse JSON
-	err := json.Unmarshal(m.Data, &packet)
-	if err != nil {
-		m.Ack()
-		return
+	// Preparing request
+	request := requestPool.Get().(*dsa.PublishRequest)
+	request.EventName = eventName
+	request.Payload = StrToBytes(payload)
+
+	for {
+		connector := source.adapter.app.GetAdapterConnector()
+		err := connector.Publish(request.EventName, request.Payload, nil)
+		if err != nil {
+			log.Error(err)
+			time.Sleep(time.Second)
+			continue
+		}
+		break
 	}
-
-	log.WithFields(log.Fields{
-		"event": packet.EventName,
-		"seq":   m.Sequence,
-	}).Info("Received event")
-
-	// Convert payload to JSON string
-	payload, err := json.Marshal(packet.Payload)
-	if err != nil {
-		m.Ack()
-		return
-	}
-
-	request := &dsa.PublishRequest{
-		EventName: packet.EventName,
-		Payload:   string(payload),
-	}
-
-	// Getting connection from pool
-	conn, err := source.adapter.app.GetGRPCPool().Get()
-	if err != nil {
-		log.Error("Failed to get connection: ", err)
-		return
-	}
-	client := dsa.NewDataSourceAdapterClient(conn)
-
-	// Preparing context
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
-
-	// Publish
-	resp, err := client.Publish(ctx, request)
-	if err != nil {
-		log.Error("did not connect: ", err)
-		return
-	}
-
-	if resp.Success == false {
-		log.Error("Failed to push message to data source adapter")
-		return
-	}
-
 	m.Ack()
+	requestPool.Put(request)
 }

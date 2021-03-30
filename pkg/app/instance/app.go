@@ -2,14 +2,14 @@ package instance
 
 import (
 	adapter_service "github.com/BrobridgeOrg/gravity-adapter-stan/pkg/adapter/service"
-	grpc_connection_pool "github.com/cfsghost/grpc-connection-pool"
+	gravity_adapter "github.com/BrobridgeOrg/gravity-sdk/adapter"
 	log "github.com/sirupsen/logrus"
 )
 
 type AppInstance struct {
-	done     chan bool
-	grpcPool *grpc_connection_pool.GRPCPool
-	adapter  *adapter_service.Adapter
+	done             chan bool
+	adapter          *adapter_service.Adapter
+	adapterConnector *gravity_adapter.AdapterConnector
 }
 
 func NewAppInstance() *AppInstance {
@@ -27,8 +27,8 @@ func (a *AppInstance) Init() error {
 
 	log.Info("Starting application")
 
-	// Initializing gRPC pool
-	err := a.initGRPCPool()
+	// Initializing adapter connector
+	err := a.initAdapterConnector()
 	if err != nil {
 		return err
 	}
