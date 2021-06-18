@@ -1,5 +1,14 @@
-[dsa]
-host = "0.0.0.0:44444"
+[gravity]
+#host = "0.0.0.0:44444"
+host = "0.0.0.0"
+port = 32803
+pingInterval = 10
+maxPingsOutstanding = 3
+maxReconnects = -1
+
+[adapter]
+adapter_id = "stan_adapter"
+adapter_name = "STAN Adapter"
 
 [source]
 config = "./settings/sources.json"

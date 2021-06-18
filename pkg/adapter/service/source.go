@@ -9,7 +9,6 @@ import (
 	"unsafe"
 
 	eventbus "github.com/BrobridgeOrg/gravity-adapter-stan/pkg/eventbus/service"
-	dsa "github.com/BrobridgeOrg/gravity-api/service/dsa"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
@@ -24,8 +23,8 @@ var defaultInfo = SourceInfo{
 }
 
 type Packet struct {
-	EventName string      `json:"event"`
-	Payload   interface{} `json:"payload"`
+	EventName string
+	Payload   []byte
 }
 
 type Source struct {
@@ -44,7 +43,7 @@ type Source struct {
 
 var requestPool = sync.Pool{
 	New: func() interface{} {
-		return &dsa.PublishRequest{}
+		return &Packet{}
 	},
 }
 
@@ -185,7 +184,7 @@ func (source *Source) HandleMessage(m *stan.Msg) {
 	payload := jsoniter.Get(m.Data, "payload").ToString()
 
 	// Preparing request
-	request := requestPool.Get().(*dsa.PublishRequest)
+	request := requestPool.Get().(*Packet)
 	request.EventName = eventName
 	request.Payload = StrToBytes(payload)
 
