@@ -7,8 +7,8 @@ maxPingsOutstanding = 3
 maxReconnects = -1
 
 [adapter]
-adapter_id = "stan_adapter"
-adapter_name = "STAN Adapter"
+adapterID = "stan_adapter"
+adapterName = "STAN Adapter"
 
 [source]
 config = "./settings/sources.json"
