@@ -188,9 +188,12 @@ func (source *Source) HandleMessage(m *stan.Msg) {
 	request.EventName = eventName
 	request.Payload = StrToBytes(payload)
 
+	meta := make(map[string]interface{})
+	meta["Msg-Id"] = fmt.Sprintf("%s-%s-%s", source.name, source.channel, m.Sequence)
+
 	for {
 		connector := source.adapter.app.GetAdapterConnector()
-		err := connector.Publish(request.EventName, request.Payload, nil)
+		err := connector.Publish(request.EventName, request.Payload, meta)
 		if err != nil {
 			log.Error(err)
 			time.Sleep(time.Second)
